@@ -36,3 +36,47 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# Ignorar arquivos e pastas do sistema
+.android/
+.dotnet/
+.expo/
+.ftb/
+.nuget/
+.packettracer/
+.pencil/
+.templateengine/
+.wdm/
+AppData/
+Application Data/
+Desktop/
+Documents/
+Favorites/
+Links/
+Music/
+Pictures/
+Videos/
+OneDrive/
+NTUSER.DAT*
+*.ldf
+*.mdf
+*.zip
+*.asta
+*.ini
+
+# Ignorar pastas específicas do projeto
+../../../../../../source/
+../../../../../../Downloads/
+../../../../../../Saved Games/
+../../../../../../MarceloHenri250.github.io/
+../../../../../../curseforge/
+../../../../../../My Games/
+../../../../../../My Web Sites/
+../../../../../../Visual Studio 2022/
+../../../../../../WB Games/
+../../../../../../Square Enix/
+../../../../../../PCSX2/
+
+# Ignorar arquivos temporários e de backup
+*.log
+*.tmp
