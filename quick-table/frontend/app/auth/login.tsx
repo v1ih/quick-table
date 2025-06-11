@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../../services/api'; // Corrigi o caminho para o arquivo api.js
+import api from '../../services/api';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -17,9 +17,9 @@ const Login = () => {
 
         try {
             const response = await api.post('/auth/login', { email, senha: password });
-            const { token, ...user } = response.data; // Extrair o token e os dados do usuário
+            const { token, ...user } = response.data;
             await AsyncStorage.setItem('user', JSON.stringify(user));
-            await AsyncStorage.setItem('token', token); // Salvar o token separadamente
+            await AsyncStorage.setItem('token', token);
 
             Alert.alert('Sucesso', 'Login realizado com sucesso!');
             router.replace('/common/home');
@@ -30,6 +30,11 @@ const Login = () => {
 
     return (
         <View style={styles.container}>
+            <Image
+                source={require('../../assets/images/quicktable_logo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+            />
             <Text style={styles.title}>Login</Text>
 
             <TextInput
@@ -38,6 +43,7 @@ const Login = () => {
                 keyboardType="email-address"
                 value={email}
                 onChangeText={setEmail}
+                placeholderTextColor="#aaa"
             />
 
             <TextInput
@@ -46,6 +52,7 @@ const Login = () => {
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
+                placeholderTextColor="#aaa"
             />
 
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
@@ -64,14 +71,29 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f4f5f6',
+        backgroundColor: '#f9f9fb',
         paddingHorizontal: 24,
+    },
+    logo: {
+        width: 120,
+        height: 120,
+        marginBottom: 24,
+        alignSelf: 'center',
+        borderRadius: 20,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 6,
     },
     title: {
         fontSize: 28,
-        fontWeight: '700',
-        color: '#1f1f1f',
-        marginBottom: 28,
+        fontWeight: 'bold',
+        color: '#1e1e2f',
+        marginBottom: 24,
+        textAlign: 'center',
+        letterSpacing: 1,
     },
     input: {
         width: '100%',
@@ -86,31 +108,31 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     button: {
-        backgroundColor: '#4A44C6',
-        paddingVertical: 14,
-        borderRadius: 10,
+        backgroundColor: '#ff7a00',
+        paddingVertical: 16,
+        borderRadius: 14,
         width: '100%',
         alignItems: 'center',
-        shadowColor: '#000',
+        shadowColor: '#ff7a00',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOpacity: 0.18,
+        shadowRadius: 6,
+        elevation: 3,
         marginBottom: 16,
     },
     buttonText: {
-        color: '#ffffff',
+        color: '#fff',
         fontSize: 16,
-        fontWeight: '600',
-        letterSpacing: 0.5,
+        fontWeight: 'bold',
+        letterSpacing: 1.2,
+        textTransform: 'uppercase',
     },
     link: {
-        color: '#4A44C6',
+        color: '#ff7a00',
         fontSize: 14,
         fontWeight: '500',
         marginTop: 8,
     },
 });
-
 
 export default Login;

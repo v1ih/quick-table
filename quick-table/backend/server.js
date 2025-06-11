@@ -36,6 +36,7 @@ app.use('/api/restaurantes', restauranteRoutes); // Atualizado para português
 app.use('/api/mesas', mesaRoutes);
 app.use('/api/reservas', reservaRoutes);
 app.use('/api/avaliacoes', avaliacaoRoutes);
+app.use('/uploads', express.static('uploads'));
 
 // Middleware para rotas inexistentes
 app.use((req, res, next) => {

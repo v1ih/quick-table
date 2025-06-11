@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, BackHandler } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, BackHandler, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import useAuth from '../../hooks/useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../../services/api';
 
 const Profile = () => {
     useAuth(); // Verifica se o usuário está autenticado
     const router = useRouter();
-    const [user, setUser] = useState<{ nome: string; email: string } | null>(null);
+    const [user, setUser] = useState<{ nome: string; email: string; telefone?: string } | null>(null);
+    const [fotoPerfil, setFotoPerfil] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -15,6 +17,17 @@ const Profile = () => {
             if (storedUser) {
                 const parsedUser = JSON.parse(storedUser);
                 setUser(parsedUser);
+
+                // Monta a URL da imagem
+                if (parsedUser.fotoPerfil) {
+                    const isFullUrl = parsedUser.fotoPerfil.startsWith('http');
+                    const urlFinal = isFullUrl
+                        ? parsedUser.fotoPerfil
+                        : (api.defaults.baseURL ? api.defaults.baseURL.replace(/\/api\/?$/, '') : '') + '/' + parsedUser.fotoPerfil.replace(/\\/g, '/');
+                    setFotoPerfil(urlFinal);
+                } else {
+                    setFotoPerfil(null);
+                }
             }
         };
 
@@ -48,6 +61,14 @@ const Profile = () => {
         <View style={styles.container}>
             <Text style={styles.title}>Meu Perfil</Text>
 
+            {/* Imagem do perfil */}
+            <View style={{ alignItems: 'center', marginBottom: 24 }}>
+                <Image
+                    source={fotoPerfil ? { uri: fotoPerfil } : require('../../assets/images/profile_default.jpeg')}
+                    style={styles.image}
+                />
+            </View>
+
             {user ? (
                 <View style={styles.infoContainer}>
                     <Text style={styles.label}>Nome:</Text>
@@ -55,6 +76,13 @@ const Profile = () => {
 
                     <Text style={styles.label}>E-mail:</Text>
                     <Text style={styles.value}>{user.email}</Text>
+
+                    {user.telefone ? (
+                        <>
+                            <Text style={styles.label}>Telefone:</Text>
+                            <Text style={styles.value}>{user.telefone}</Text>
+                        </>
+                    ) : null}
                 </View>
             ) : (
                 <Text>Carregando...</Text>
@@ -132,6 +160,13 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         textTransform: 'uppercase',
         letterSpacing: 1,
+    },
+    image: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        marginBottom: 8,
+        backgroundColor: '#e0e0e0',
     },
 });
 

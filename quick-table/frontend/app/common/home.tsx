@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, BackHandler, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, BackHandler, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useAuth from '../../hooks/useAuth';
@@ -52,6 +52,13 @@ const Home = () => {
 
     return (
         <View style={styles.container}>
+            {/* Logo do app */}
+            <Image
+                source={require('../../assets/images/quicktable_logo.png')} // ajuste o nome se necessário
+                style={styles.logo}
+                resizeMode="contain"
+            />
+
             <Text style={styles.title}>Bem-vindo ao QuickTable!</Text>
             <Text style={styles.subtitle}>Escolha uma opção abaixo:</Text>
 
@@ -113,20 +120,21 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#f4f5f6', // fundo escuro moderno
+        padding: 24,
+        backgroundColor: '#f9f9fb',
     },
     title: {
-        fontSize: 30,
-        fontWeight: '700',
-        color: '#0f0f0f',
-        marginBottom: 10,
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#1e1e2f',
+        marginBottom: 8,
         textAlign: 'center',
+        letterSpacing: 1,
     },
     subtitle: {
         fontSize: 16,
-        color: '#a0a0a0',
-        marginBottom: 30,
+        color: '#6c6c80',
+        marginBottom: 32,
         textAlign: 'center',
     },
     section: {
@@ -143,28 +151,40 @@ const styles = StyleSheet.create({
         letterSpacing: 1.5,
     },
     button: {
-        backgroundColor: '#1e1e2f',
-        paddingVertical: 14,
+        backgroundColor: '#ff7a00',
+        paddingVertical: 16,
         paddingHorizontal: 25,
-        borderRadius: 12,
-        marginBottom: 15,
-        width: '90%',
+        borderRadius: 14,
+        marginBottom: 18,
+        width: '92%',
         alignItems: 'center',
         alignSelf: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
+        shadowColor: '#ff7a00',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.18,
         shadowRadius: 6,
-        elevation: 4,
-        borderWidth: 1,
-        borderColor: '#2e2e3e',
+        elevation: 3,
+        borderWidth: 0,
     },
     buttonText: {
-        color: '#ffffff',
-        fontSize: 15,
-        fontWeight: '600',
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
         letterSpacing: 1.2,
         textTransform: 'uppercase',
+    },
+    logo: {
+        width: 160,
+        height: 160,
+        marginBottom: 24,
+        alignSelf: 'center',
+        borderRadius: 20,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 6,
     },
 });
 

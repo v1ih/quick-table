@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 
 const Home = () => {
@@ -7,6 +7,11 @@ const Home = () => {
 
     return (
         <View style={styles.container}>
+            <Image
+                source={require('../assets/images/quicktable_logo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+            />
             <Text style={styles.title}>Bem-vindo ao QuickTable!</Text>
             <Text style={styles.subtitle}>Gerencie suas reservas de forma rápida e fácil.</Text>
 
@@ -32,43 +37,57 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f4f5f6',
+        backgroundColor: '#f9f9fb',
         paddingHorizontal: 24,
+    },
+    logo: {
+        width: 140,
+        height: 140,
+        marginBottom: 24,
+        alignSelf: 'center',
+        borderRadius: 20,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 6,
     },
     title: {
         fontSize: 28,
-        fontWeight: '700',
-        color: '#1f1f1f',
-        marginBottom: 12,
+        fontWeight: 'bold',
+        color: '#1e1e2f',
+        marginBottom: 8,
         textAlign: 'center',
+        letterSpacing: 1,
     },
     subtitle: {
         fontSize: 16,
-        color: '#6e6e6e',
+        color: '#6c6c80',
         marginBottom: 32,
         textAlign: 'center',
         paddingHorizontal: 12,
     },
     button: {
-        backgroundColor: '#4A44C6',
-        paddingVertical: 14,
-        borderRadius: 12,
+        backgroundColor: '#ff7a00',
+        paddingVertical: 16,
+        borderRadius: 14,
         width: '100%',
         alignItems: 'center',
-        marginBottom: 16,
-        shadowColor: '#000',
+        marginBottom: 18,
+        shadowColor: '#ff7a00',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOpacity: 0.18,
+        shadowRadius: 6,
+        elevation: 3,
     },
     buttonText: {
-        color: '#ffffff',
+        color: '#fff',
         fontSize: 16,
-        fontWeight: '600',
-        letterSpacing: 0.5,
+        fontWeight: 'bold',
+        letterSpacing: 1.2,
+        textTransform: 'uppercase',
     },
 });
-
 
 export default Home;

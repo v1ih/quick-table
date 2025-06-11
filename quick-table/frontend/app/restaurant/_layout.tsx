@@ -3,10 +3,11 @@ import React from 'react';
 
 const Layout = () => {
     return (
-        <Stack>
-            <Stack.Screen name="manage-tables" options={{ title: 'Gerenciar Mesas' }} />
-            <Stack.Screen name="add-table" options={{ title: 'Adicionar Mesa' }} />
-            <Stack.Screen name="edit-table" options={{ title: 'Editar Mesa' }} />
+        <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="register-restaurant" />
+            <Stack.Screen name="manage-tables" />
+            <Stack.Screen name="add-table" />
+            <Stack.Screen name="edit-table" />
         </Stack>
     );
 };

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 import api from '../../services/api';
@@ -33,13 +33,10 @@ const Register = () => {
             }
         } catch (error: any) {
             if (error.response && error.response.data && error.response.data.erro) {
-                // Exibir a mensagem de erro retornada pelo backend
                 Alert.alert('Erro', error.response.data.erro);
             } else if (error.request) {
-                // Nenhuma resposta do servidor
                 Alert.alert('Erro', 'O servidor não respondeu. Verifique sua conexão ou o IP configurado.');
             } else {
-                // Outro tipo de erro
                 Alert.alert('Erro', 'Erro inesperado: ' + error.message);
             }
         }
@@ -47,6 +44,11 @@ const Register = () => {
 
     return (
         <View style={styles.container}>
+            <Image
+                source={require('../../assets/images/quicktable_logo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+            />
             <Text style={styles.title}>Cadastro</Text>
 
             <TextInput
@@ -54,6 +56,7 @@ const Register = () => {
                 placeholder="Nome"
                 value={nome}
                 onChangeText={setNome}
+                placeholderTextColor="#aaa"
             />
 
             <TextInput
@@ -62,6 +65,7 @@ const Register = () => {
                 keyboardType="email-address"
                 value={email}
                 onChangeText={setEmail}
+                placeholderTextColor="#aaa"
             />
 
             <TextInput
@@ -70,17 +74,21 @@ const Register = () => {
                 secureTextEntry
                 value={senha}
                 onChangeText={setSenha}
+                placeholderTextColor="#aaa"
             />
 
             <Text style={styles.label}>Tipo de Usuário</Text>
-            <Picker
-                selectedValue={tipo}
-                onValueChange={(itemValue) => setTipo(itemValue)}
-                style={styles.picker}
-            >
-                <Picker.Item label="Cliente" value="cliente" />
-                <Picker.Item label="Restaurante" value="restaurante" />
-            </Picker>
+            <View style={styles.pickerWrapper}>
+                <Picker
+                    selectedValue={tipo}
+                    onValueChange={(itemValue) => setTipo(itemValue)}
+                    style={styles.picker}
+                    dropdownIconColor="#ff7a00"
+                >
+                    <Picker.Item label="Cliente" value="cliente" />
+                    <Picker.Item label="Restaurante" value="restaurante" />
+                </Picker>
+            </View>
 
             <TouchableOpacity style={styles.button} onPress={handleRegister}>
                 <Text style={styles.buttonText}>Cadastrar</Text>
@@ -98,14 +106,29 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f4f5f6',
+        backgroundColor: '#f9f9fb',
         paddingHorizontal: 24,
+    },
+    logo: {
+        width: 120,
+        height: 120,
+        marginBottom: 24,
+        alignSelf: 'center',
+        borderRadius: 20,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 6,
     },
     title: {
         fontSize: 28,
-        fontWeight: '700',
-        color: '#1f1f1f',
-        marginBottom: 28,
+        fontWeight: 'bold',
+        color: '#1e1e2f',
+        marginBottom: 24,
+        textAlign: 'center',
+        letterSpacing: 1,
     },
     input: {
         width: '100%',
@@ -125,42 +148,46 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         alignSelf: 'flex-start',
     },
+    pickerWrapper: {
+        width: '100%',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#dcdcdc',
+        marginBottom: 20,
+        overflow: 'hidden',
+    },
     picker: {
         width: '100%',
         height: 52,
-        backgroundColor: '#ffffff',
-        borderRadius: 10,
-        marginBottom: 20,
-        borderWidth: 1,
-        borderColor: '#dcdcdc',
         color: '#333',
     },
     button: {
-        backgroundColor: '#4A44C6',
-        paddingVertical: 14,
-        borderRadius: 10,
+        backgroundColor: '#ff7a00',
+        paddingVertical: 16,
+        borderRadius: 14,
         width: '100%',
         alignItems: 'center',
-        shadowColor: '#000',
+        shadowColor: '#ff7a00',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOpacity: 0.18,
+        shadowRadius: 6,
+        elevation: 3,
         marginBottom: 16,
     },
     buttonText: {
-        color: '#ffffff',
+        color: '#fff',
         fontSize: 16,
-        fontWeight: '600',
-        letterSpacing: 0.5,
+        fontWeight: 'bold',
+        letterSpacing: 1.2,
+        textTransform: 'uppercase',
     },
     link: {
-        color: '#4A44C6',
+        color: '#ff7a00',
         fontSize: 14,
         fontWeight: '500',
         marginTop: 8,
     },
 });
-
 
 export default Register;

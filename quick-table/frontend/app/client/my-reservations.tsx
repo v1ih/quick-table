@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, BackHandler, FlatList } from 'react-native';
+import { View, StyleSheet, Alert, BackHandler, FlatList, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Card, Button, Title, Paragraph } from 'react-native-paper';
 import api from '../../services/api';
@@ -72,16 +72,45 @@ const MyReservations = () => {
         }
     };
 
+    const getStatusColor = (status?: string, background = false) => {
+        switch ((status || '').toLowerCase()) {
+            case 'cancelada':
+                return background ? '#ffeaea' : '#ff3b30';
+            case 'confirmada':
+                return background ? '#eaffea' : '#4caf50';
+            case 'pendente':
+                return background ? '#fff8e1' : '#ffb300';
+            default:
+                return background ? '#e3e3e3' : '#22223b';
+        }
+    };
+
     const renderItem = ({ item }: { item: Reservation }) => (
         <Card style={styles.reservationItem}>
             <Card.Content>
-                <Paragraph style={styles.reservationText}>Restaurante: {item.mesa?.restaurante?.nome || '-'}</Paragraph>
-                <Paragraph style={styles.reservationText}>Mesa: {item.mesa?.numero || '-'} - {item.mesa?.descricao || '-'}</Paragraph>
-                <Paragraph style={styles.reservationText}>Data: {new Date(item.dataHora).toLocaleDateString()}</Paragraph>
-                <Paragraph style={styles.reservationText}>Horário: {new Date(item.dataHora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Paragraph>
-                <Paragraph style={styles.reservationText}>Pessoas: {item.numeroPessoas}</Paragraph>
-                {item.observacao && <Paragraph style={styles.reservationText}>Observação: {item.observacao}</Paragraph>}
-                <Paragraph style={styles.reservationText}>Status: {item.status || 'Ativa'}</Paragraph>
+                <Paragraph style={styles.restaurantName}>{item.mesa?.restaurante?.nome || '-'}</Paragraph>
+                <Paragraph style={styles.reservationText}>
+                    <Text style={styles.label}>Mesa:</Text> {item.mesa?.numero || '-'} - {item.mesa?.descricao || '-'}
+                </Paragraph>
+                <Paragraph style={styles.reservationText}>
+                    <Text style={styles.label}>Data:</Text> {new Date(item.dataHora).toLocaleDateString('pt-BR')}
+                </Paragraph>
+                <Paragraph style={styles.reservationText}>
+                    <Text style={styles.label}>Horário:</Text> {new Date(item.dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </Paragraph>
+                <Paragraph style={styles.reservationText}>
+                    <Text style={styles.label}>Pessoas:</Text> {item.numeroPessoas}
+                </Paragraph>
+                {item.observacao && (
+                    <Paragraph style={styles.reservationText}>
+                        <Text style={styles.label}>Observação:</Text> {item.observacao}
+                    </Paragraph>
+                )}
+                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status, true) }]}>
+                    <Text style={[styles.statusBadgeText, { color: getStatusColor(item.status) }]}>
+                        {item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Ativa'}
+                    </Text>
+                </View>
                 {item.status?.toLowerCase() !== 'cancelada' && (
                     <Button
                         mode="contained"
@@ -116,44 +145,76 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#f9f9fb',
     },
     title: {
-        fontSize: 24,
+        fontSize: 26,
         fontWeight: 'bold',
-        marginBottom: 20,
+        marginBottom: 24,
         textAlign: 'center',
+        color: '#22223b',
+        letterSpacing: 1,
     },
     reservationItem: {
-        padding: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
         backgroundColor: '#fff',
-        borderRadius: 8,
-        marginBottom: 10,
+        borderRadius: 16,
+        marginBottom: 18,
+        padding: 20,
+        // Sombra para Android e iOS
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 4,
+        borderWidth: 0,
     },
     reservationText: {
         fontSize: 16,
-        color: '#333',
-        marginBottom: 5,
+        color: '#22223b',
+        marginBottom: 4,
     },
     noReservationsText: {
-        fontSize: 16,
+        fontSize: 17,
         textAlign: 'center',
-        marginTop: 20,
-        color: '#666',
+        marginTop: 32,
+        color: '#888',
     },
     cancelButton: {
-        backgroundColor: '#FF0000',
-        padding: 10,
-        borderRadius: 5,
+        backgroundColor: '#ff7a00',
+        paddingVertical: 12,
+        borderRadius: 18,
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 16,
+        elevation: 2,
     },
     cancelButtonText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
+        letterSpacing: 1,
+    },
+    restaurantName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#4A44C6',
+        marginBottom: 6,
+    },
+    label: {
+        fontWeight: 'bold',
+        color: '#22223b',
+    },
+    statusBadge: {
+        alignSelf: 'flex-start',
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 12,
+        marginTop: 10,
+        marginBottom: 4,
+    },
+    statusBadgeText: {
+        fontWeight: 'bold',
+        fontSize: 15,
+        letterSpacing: 1,
     },
 });
 
