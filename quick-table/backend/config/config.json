@@ -1,0 +1,24 @@
+{
+    "development": {
+      "username": "root",
+      "password": "Mysql123!",
+      "database": "quicktable",
+      "host": "127.0.0.1",
+      "dialect": "mysql"
+    },
+    "test": {
+      "username": "root",
+      "password": "Mysql123!",
+      "database": "quicktable_test",
+      "host": "127.0.0.1",
+      "dialect": "mysql"
+    },
+    "production": {
+      "username": "root",
+      "password": "Mysql123!",
+      "database": "quicktable_prod",
+      "host": "127.0.0.1",
+      "dialect": "mysql"
+    }
+  }
+  
