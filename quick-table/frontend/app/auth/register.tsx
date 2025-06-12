@@ -3,17 +3,56 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } fro
 import { useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 import api from '../../services/api';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const Register = () => {
     const [nome, setNome] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [confirmSenha, setConfirmSenha] = useState('');
     const [tipo, setTipo] = useState('cliente'); // cliente ou restaurante
+    const [showSenha, setShowSenha] = useState(false);
+    const [showConfirmSenha, setShowConfirmSenha] = useState(false);
+    const [nomeError, setNomeError] = useState(false);
+    const [emailError, setEmailError] = useState(false);
+    const [senhaError, setSenhaError] = useState(false);
+    const [confirmSenhaError, setConfirmSenhaError] = useState(false);
     const router = useRouter();
 
+    function validarEmail(email: string) {
+        // Regex básico para e-mail
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function validarSenha(senha: string) {
+        // Pelo menos 8 caracteres, 1 número, 1 maiúscula, 1 minúscula
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/.test(senha);
+    }
+
     const handleRegister = async () => {
-        if (nome === '' || email === '' || senha === '') {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+        setNomeError(false);
+        setEmailError(false);
+        setSenhaError(false);
+        setConfirmSenhaError(false);
+        let erro = false;
+        if (nome === '') {
+            setNomeError(true);
+            erro = true;
+        }
+        if (email === '' || !validarEmail(email)) {
+            setEmailError(true);
+            erro = true;
+        }
+        if (!validarSenha(senha)) {
+            setSenhaError(true);
+            erro = true;
+        }
+        if (senha !== confirmSenha || confirmSenha === '') {
+            setConfirmSenhaError(true);
+            erro = true;
+        }
+        if (erro) {
+            Alert.alert('Erro', 'Verifique os campos destacados.');
             return;
         }
 
@@ -52,7 +91,7 @@ const Register = () => {
             <Text style={styles.title}>Cadastro</Text>
 
             <TextInput
-                style={styles.input}
+                style={[styles.input, nomeError && styles.inputError]}
                 placeholder="Nome"
                 value={nome}
                 onChangeText={setNome}
@@ -60,7 +99,7 @@ const Register = () => {
             />
 
             <TextInput
-                style={styles.input}
+                style={[styles.input, emailError && styles.inputError]}
                 placeholder="E-mail"
                 keyboardType="email-address"
                 value={email}
@@ -68,12 +107,26 @@ const Register = () => {
                 placeholderTextColor="#aaa"
             />
 
+            <View style={{ width: '100%', position: 'relative' }}>
+                <TextInput
+                    style={[styles.input, senhaError && styles.inputError]}
+                    placeholder="Senha"
+                    secureTextEntry={!showSenha}
+                    value={senha}
+                    onChangeText={setSenha}
+                    placeholderTextColor="#aaa"
+                />
+                <TouchableOpacity style={styles.showButton} onPress={() => setShowSenha((v) => !v)}>
+                    <MaterialIcons name={showSenha ? 'visibility-off' : 'visibility'} size={22} color="#ff7a00" />
+                </TouchableOpacity>
+            </View>
+
             <TextInput
-                style={styles.input}
-                placeholder="Senha"
-                secureTextEntry
-                value={senha}
-                onChangeText={setSenha}
+                style={[styles.input, confirmSenhaError && styles.inputError]}
+                placeholder="Confirme a Senha"
+                secureTextEntry={!showConfirmSenha}
+                value={confirmSenha}
+                onChangeText={setConfirmSenha}
                 placeholderTextColor="#aaa"
             />
 
@@ -142,6 +195,10 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: '#333',
     },
+    inputError: {
+        borderColor: '#ff3b30',
+        borderWidth: 2,
+    },
     label: {
         fontSize: 16,
         color: '#333',
@@ -187,6 +244,15 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
         marginTop: 8,
+    },
+    showButton: {
+        position: 'absolute',
+        right: 16,
+        top: 0,
+        height: 52,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2,
     },
 });
 

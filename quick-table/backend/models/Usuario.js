@@ -30,6 +30,14 @@ const Usuario = sequelize.define('Usuario', {
         type: DataTypes.STRING,
         allowNull: true, // Opcional
     },
+    resetToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    resetTokenExpira: {
+        type: DataTypes.BIGINT,
+        allowNull: true,
+    },
 });
 
 module.exports = Usuario;

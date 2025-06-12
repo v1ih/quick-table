@@ -3,15 +3,31 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } fro
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../../services/api';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [emailError, setEmailError] = useState(false);
+    const [senhaError, setSenhaError] = useState(false);
+    const [showSenha, setShowSenha] = useState(false);
     const router = useRouter();
 
+    function validarEmail(email: string) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
     const handleLogin = async () => {
-        if (email === '' || password === '') {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+        setEmailError(false);
+        setSenhaError(false);
+        if (email === '' || !validarEmail(email)) {
+            setEmailError(true);
+            Alert.alert('Erro', 'Digite um e-mail válido.');
+            return;
+        }
+        if (password === '') {
+            setSenhaError(true);
+            Alert.alert('Erro', 'Digite sua senha.');
             return;
         }
 
@@ -38,25 +54,35 @@ const Login = () => {
             <Text style={styles.title}>Login</Text>
 
             <TextInput
-                style={styles.input}
+                style={[styles.input, emailError && styles.inputError]}
                 placeholder="E-mail"
                 keyboardType="email-address"
                 value={email}
                 onChangeText={setEmail}
                 placeholderTextColor="#aaa"
+                autoCapitalize="none"
             />
 
-            <TextInput
-                style={styles.input}
-                placeholder="Senha"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-                placeholderTextColor="#aaa"
-            />
+            <View style={{ width: '100%', position: 'relative' }}>
+                <TextInput
+                    style={[styles.input, senhaError && styles.inputError]}
+                    placeholder="Senha"
+                    secureTextEntry={!showSenha}
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholderTextColor="#aaa"
+                />
+                <TouchableOpacity style={styles.showButton} onPress={() => setShowSenha((v) => !v)}>
+                    <MaterialIcons name={showSenha ? 'visibility-off' : 'visibility'} size={22} color="#ff7a00" />
+                </TouchableOpacity>
+            </View>
 
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
                 <Text style={styles.buttonText}>Entrar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => router.push('/auth/forgot-password')}>
+                <Text style={styles.link}>Esqueci minha senha</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => router.push('/auth/register')}>
@@ -107,6 +133,10 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: '#333',
     },
+    inputError: {
+        borderColor: '#ff3b30',
+        borderWidth: 2,
+    },
     button: {
         backgroundColor: '#ff7a00',
         paddingVertical: 16,
@@ -132,6 +162,15 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
         marginTop: 8,
+    },
+    showButton: {
+        position: 'absolute',
+        right: 16,
+        top: 0,
+        height: 52,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2,
     },
 });
 

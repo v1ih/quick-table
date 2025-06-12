@@ -3,7 +3,7 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 
-const { registrar, login } = require('../controllers/autenticacaoController');
+const { registrar, login, forgotPassword, resetPassword } = require('../controllers/autenticacaoController');
 const { atualizarPerfil, deletarUsuario, atualizarFotoPerfil } = require('../controllers/usuarioController');
 const autenticar = require('../middlewares/autenticar');
 
@@ -23,6 +23,8 @@ const upload = multer({ storage });
 // Rotas de autenticação
 router.post('/register', registrar);
 router.post('/login', login);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 
 // Rotas de perfil
 router.put('/perfil', autenticar, atualizarPerfil);

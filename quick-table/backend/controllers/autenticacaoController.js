@@ -75,3 +75,28 @@ exports.atualizarPerfil = async (req, res) => {
         res.status(500).json({ erro: 'Erro ao atualizar o perfil: ' + error.message });
     }
 };
+
+// Recuperação de senha - simulação de token, alteração real de senha
+exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ erro: 'E-mail é obrigatório.' });
+    // Simula sempre sucesso (não revela se o e-mail existe)
+    return res.status(200).json({ mensagem: 'Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha.' });
+};
+
+// Redefinição de senha - simulação de token, alteração real de senha
+exports.resetPassword = async (req, res) => {
+    const { email, token, senha } = req.body;
+    if (!email || !token || !senha) return res.status(400).json({ erro: 'Dados obrigatórios faltando.' });
+    try {
+        const usuario = await Usuario.findOne({ where: { email } });
+        if (!usuario) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+        usuario.senha = await bcrypt.hash(senha, 10);
+        usuario.resetToken = null;
+        usuario.resetTokenExpira = null;
+        await usuario.save();
+        return res.status(200).json({ mensagem: 'Senha redefinida com sucesso!' });
+    } catch (error) {
+        return res.status(500).json({ erro: 'Erro ao redefinir senha.' });
+    }
+};
