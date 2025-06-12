@@ -3,7 +3,7 @@ import { Slot } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 import HomeTabs from '../common/HomeTabs';
 
-export default function RestaurantLayout() {
+export default function ClientLayout() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>

@@ -136,6 +136,7 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 24,
         backgroundColor: '#f4f5f6',
+        // Removido alignItems/justifyContent para evitar centralização
     },
     title: {
         fontSize: 28,

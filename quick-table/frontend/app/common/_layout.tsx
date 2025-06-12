@@ -1,9 +1,9 @@
 import React from 'react';
 import { Slot } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
-import HomeTabs from '../common/HomeTabs';
+import HomeTabs from './HomeTabs';
 
-export default function RestaurantLayout() {
+export default function CommonLayout() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>

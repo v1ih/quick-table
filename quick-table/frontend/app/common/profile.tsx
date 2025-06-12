@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import useAuth from '../../hooks/useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../../services/api';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Profile = () => {
     useAuth(); // Verifica se o usuário está autenticado
@@ -59,42 +60,44 @@ const Profile = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Meu Perfil</Text>
-
-            {/* Imagem do perfil */}
-            <View style={{ alignItems: 'center', marginBottom: 24 }}>
-                <Image
-                    source={fotoPerfil ? { uri: fotoPerfil } : require('../../assets/images/profile_default.jpeg')}
-                    style={styles.image}
-                />
-            </View>
-
-            {user ? (
-                <View style={styles.infoContainer}>
-                    <Text style={styles.label}>Nome:</Text>
-                    <Text style={styles.value}>{user.nome}</Text>
-
-                    <Text style={styles.label}>E-mail:</Text>
-                    <Text style={styles.value}>{user.email}</Text>
-
-                    {user.telefone ? (
-                        <>
-                            <Text style={styles.label}>Telefone:</Text>
-                            <Text style={styles.value}>{user.telefone}</Text>
-                        </>
-                    ) : null}
+            <LinearGradient
+                colors={['#fffaf5', '#fff7f0', '#f9f9fb']}
+                style={styles.gradientBg}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+            >
+                <Text style={styles.title}>Meu Perfil</Text>
+                <View style={styles.avatarWrapper}>
+                    <Image
+                        source={fotoPerfil ? { uri: fotoPerfil } : require('../../assets/images/profile_default.jpeg')}
+                        style={styles.image}
+                    />
                 </View>
-            ) : (
-                <Text>Carregando...</Text>
-            )}
-
-            <TouchableOpacity style={styles.button} onPress={handleEditProfile}>
-                <Text style={styles.buttonText}>Editar Perfil</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.button, styles.logoutButton]} onPress={handleLogout}>
-                <Text style={styles.buttonText}>Sair</Text>
-            </TouchableOpacity>
+                {user ? (
+                    <View style={styles.infoContainer}>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.label}>Nome:</Text>
+                            <Text style={[styles.value, !user.nome && styles.valueMissing]}>{user.nome || 'Não informado'}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.label}>E-mail:</Text>
+                            <Text style={[styles.value, !user.email && styles.valueMissing]}>{user.email || 'Não informado'}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.label}>Telefone:</Text>
+                            <Text style={[styles.value, !user.telefone && styles.valueMissing]}>{user.telefone || 'Não informado'}</Text>
+                        </View>
+                    </View>
+                ) : (
+                    <Text>Carregando...</Text>
+                )}
+                <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
+                    <Text style={styles.editButtonText}>Editar Perfil</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                    <Text style={styles.logoutButtonText}>Sair</Text>
+                </TouchableOpacity>
+            </LinearGradient>
         </View>
     );
 };
@@ -102,71 +105,113 @@ const Profile = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
+        backgroundColor: '#fffaf5',
+    },
+    gradientBg: {
+        flex: 1,
         alignItems: 'center',
-        backgroundColor: '#f4f5f6',
-        padding: 24,
+        paddingHorizontal: 0,
+        paddingTop: 40,
+        paddingBottom: 0,
     },
     title: {
-        fontSize: 28,
-        fontWeight: '700',
-        color: '#0f0f0f',
-        marginBottom: 24,
-        textAlign: 'center',
-    },
-    infoContainer: {
-        width: '90%',
-        marginBottom: 32,
-        backgroundColor: '#ffffff',
-        borderRadius: 12,
-        padding: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-        elevation: 3,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 4,
-    },
-    value: {
-        fontSize: 16,
-        color: '#666',
-        marginBottom: 12,
-    },
-    button: {
-        backgroundColor: '#4A44C6',
-        paddingVertical: 14,
-        paddingHorizontal: 24,
-        borderRadius: 10,
-        width: '90%',
-        alignItems: 'center',
+        fontSize: 30,
+        fontWeight: '800',
+        color: '#ff7a00',
         marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 2,
+        textAlign: 'center',
+        letterSpacing: 0.5,
     },
-    logoutButton: {
-        backgroundColor: '#FF3B30',
-    },
-    buttonText: {
-        color: '#ffffff',
-        fontSize: 15,
-        fontWeight: '600',
-        textTransform: 'uppercase',
-        letterSpacing: 1,
+    avatarWrapper: {
+        alignItems: 'center',
+        marginBottom: 24,
+        width: '100%',
     },
     image: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        width: 140,
+        height: 140,
+        borderRadius: 70,
+        marginBottom: 12,
+        backgroundColor: '#ffe3c2',
+        borderWidth: 4,
+        borderColor: '#ffb366',
+    },
+    infoContainer: {
+        width: '99%',
+        marginBottom: 36,
+        backgroundColor: '#fff',
+        borderRadius: 24,
+        padding: 32,
+        shadowColor: '#ffb366',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.10,
+        shadowRadius: 16,
+        elevation: 5,
+        gap: 14,
+    },
+    infoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 18,
+        gap: 10,
+    },
+    label: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#ff7a00',
+        minWidth: 90,
+    },
+    value: {
+        fontSize: 18,
+        color: '#22223b',
+        fontWeight: '500',
+        flex: 1,
+    },
+    valueMissing: {
+        color: '#b0b0b0',
+        fontStyle: 'italic',
+    },
+    editButton: {
+        backgroundColor: '#fff',
+        borderWidth: 2,
+        borderColor: '#ff7a00',
+        borderRadius: 16,
+        width: '99%',
+        alignItems: 'center',
+        paddingVertical: 20,
+        marginBottom: 18,
+        shadowColor: '#ffb366',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.10,
+        shadowRadius: 6,
+        elevation: 2,
+    },
+    editButtonText: {
+        color: '#ff7a00',
+        fontSize: 19,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+        textTransform: 'uppercase',
+    },
+    logoutButton: {
+        backgroundColor: '#ff7a00',
+        borderRadius: 16,
+        width: '99%',
+        alignItems: 'center',
+        paddingVertical: 20,
         marginBottom: 8,
-        backgroundColor: '#e0e0e0',
+        shadowColor: '#ffb366',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.10,
+        shadowRadius: 6,
+        elevation: 2,
+    },
+    logoutButtonText: {
+        color: '#fff',
+        fontSize: 19,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+        textTransform: 'uppercase',
     },
 });
 

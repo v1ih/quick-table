@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, BackHandler, Image, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../../services/api';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname, useNavigation } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -10,10 +10,17 @@ const EditProfile = () => {
     const [nome, setNome] = useState('');
     const [email, setEmail] = useState('');
     const [telefone, setTelefone] = useState('');
-    const [fotoPerfil, setFotoPerfil] = useState<string | null>(null); // URL completa para exibir
-    const [fotoPerfilLocal, setFotoPerfilLocal] = useState<string | null>(null); // Apenas local, para upload
+    const [fotoPerfil, setFotoPerfil] = useState<string | null>(null);
+    const [fotoPerfilLocal, setFotoPerfilLocal] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
+    const [dirty, setDirty] = useState(false);
+    const [errors, setErrors] = useState<{ nome?: string; email?: string; telefone?: string }>({});
+    const [successMsg, setSuccessMsg] = useState('');
+    const [showingAlert, setShowingAlert] = useState(false);
     const router = useRouter();
+    const pathname = usePathname();
+    const navigation = useNavigation();
+    const pendingActionRef = useRef<any>(null);
 
     // Carrega dados do usuário ao abrir a tela
     useEffect(() => {
@@ -24,13 +31,11 @@ const EditProfile = () => {
                 setNome(parsedUser.nome);
                 setEmail(parsedUser.email);
                 setTelefone(parsedUser.telefone || '');
-                console.log('fotoPerfil carregado:', parsedUser.fotoPerfil);
                 if (parsedUser.fotoPerfil) {
                     const isFullUrl = parsedUser.fotoPerfil.startsWith('http');
                     const urlFinal = isFullUrl
                         ? parsedUser.fotoPerfil
                         : (api.defaults.baseURL ? api.defaults.baseURL.replace(/\/api\/?$/, '') : '') + '/' + parsedUser.fotoPerfil.replace(/\\/g, '/');
-                    console.log('URL final da imagem:', urlFinal);
                     setFotoPerfil(urlFinal);
                 } else {
                     setFotoPerfil(null);
@@ -43,19 +48,53 @@ const EditProfile = () => {
     // Confirmação ao sair sem salvar
     useEffect(() => {
         const backAction = () => {
-            Alert.alert(
-                'Descartar alterações',
-                'Tem certeza de que deseja descartar as alterações e voltar para o perfil?',
-                [
-                    { text: 'Cancelar', onPress: () => null, style: 'cancel' },
-                    { text: 'Sim', onPress: () => router.replace('/common/profile') },
-                ]
-            );
+            if (dirty) {
+                Alert.alert(
+                    'Descartar alterações?',
+                    'Você tem alterações não salvas. Deseja descartar ou salvar antes de sair?',
+                    [
+                        { text: 'Cancelar', style: 'cancel' },
+                        { text: 'Descartar', style: 'destructive', onPress: () => router.replace('/common/profile') },
+                        { text: 'Salvar', onPress: () => handleSave() },
+                    ]
+                );
+                return true;
+            }
+            router.replace('/common/profile');
             return true;
         };
         const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
         return () => backHandler.remove();
-    }, []);
+    }, [dirty, nome, email, telefone, fotoPerfil, fotoPerfilLocal]);
+
+    // Intercepta navegação por abas
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('beforeRemove', (e: any) => {
+            if (!dirty || showingAlert) return;
+            e.preventDefault();
+            pendingActionRef.current = e.data.action;
+            setShowingAlert(true);
+            Alert.alert(
+                'Descartar alterações?',
+                'Você tem alterações não salvas. Deseja descartar ou salvar antes de sair?',
+                [
+                    { text: 'Cancelar', style: 'cancel', onPress: () => { setShowingAlert(false); } },
+                    { text: 'Descartar', style: 'destructive', onPress: () => {
+                        setShowingAlert(false);
+                        navigation.dispatch(pendingActionRef.current);
+                    } },
+                    { text: 'Salvar', onPress: async () => {
+                        setUploading(true);
+                        const ok = await handleSave(true);
+                        setUploading(false);
+                        setShowingAlert(false);
+                        if (ok) navigation.dispatch(pendingActionRef.current);
+                    } },
+                ]
+            );
+        });
+        return unsubscribe;
+    }, [dirty, nome, email, telefone, fotoPerfil, fotoPerfilLocal, navigation, showingAlert]);
 
     // Formatação do telefone
     const formatPhone = (text: string) => {
@@ -65,28 +104,39 @@ const EditProfile = () => {
             .slice(0, 15);
     };
 
+    // Validação dos campos
+    const validate = () => {
+        const newErrors: { nome?: string; email?: string; telefone?: string } = {};
+        if (!nome.trim()) newErrors.nome = 'Informe seu nome';
+        if (!email.trim()) newErrors.email = 'Informe seu e-mail';
+        else if (!/^([\w-.]+)@([\w-]+)\.([\w-]{2,})$/.test(email.trim())) newErrors.email = 'E-mail inválido';
+        // Telefone é opcional, mas se preenchido, deve ter 15 caracteres (com máscara)
+        if (telefone && telefone.replace(/\D/g, '').length < 11) newErrors.telefone = 'Telefone incompleto';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     // Seleciona imagem do dispositivo
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images, // Forma recomendada
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [1, 1],
             quality: 0.5,
         });
-
         if (!result.canceled) {
             setFotoPerfilLocal(result.assets[0].uri);
             setFotoPerfil(result.assets[0].uri);
+            setDirty(true);
         }
     };
 
     // Salva todas as alterações (dados + imagem)
-    const handleSave = async () => {
+    const handleSave = async (silent?: boolean) => {
+        if (!validate()) return false;
         setUploading(true);
         try {
             let fotoPerfilPath = null;
-
-            // Se o usuário escolheu uma nova imagem, faz upload
             if (fotoPerfilLocal) {
                 const formData = new FormData();
                 formData.append('fotoPerfil', {
@@ -94,53 +144,54 @@ const EditProfile = () => {
                     name: 'profile.jpg',
                     type: 'image/jpeg',
                 } as any);
-
                 const response = await api.post('/auth/perfil/foto', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
-
                 if (response.data.fotoPerfil) {
-                    fotoPerfilPath = response.data.fotoPerfil; // Caminho relativo retornado pelo backend
+                    fotoPerfilPath = response.data.fotoPerfil;
                 }
             }
-
-            // Atualiza os dados do perfil (incluindo a URL relativa da imagem)
             const response = await api.put('/auth/perfil', {
                 nome,
                 email,
                 telefone,
                 fotoPerfil: fotoPerfilPath || (fotoPerfil ? fotoPerfil.replace(api.defaults.baseURL + '/', '') : null),
             });
-
             const updatedUser = response.data.usuario;
-            // Monta a URL completa para exibir a imagem
             const fotoPerfilUrl = updatedUser.fotoPerfil
                 ? api.defaults.baseURL + '/' + updatedUser.fotoPerfil.replace(/\\/g, '/')
                 : null;
             setFotoPerfil(fotoPerfilUrl);
-
-            // Salva o usuário atualizado no AsyncStorage
             await AsyncStorage.setItem('user', JSON.stringify({
                 ...updatedUser,
                 fotoPerfil: updatedUser.fotoPerfil || null
             }));
-
-            Alert.alert('Sucesso', 'Perfil atualizado com sucesso!', [
-                { text: 'OK', onPress: () => router.replace('/common/profile') },
-            ]);
+            setSuccessMsg('Perfil atualizado com sucesso!');
+            setDirty(false);
+            if (!silent) {
+                setTimeout(() => {
+                    setSuccessMsg('');
+                    router.replace('/common/profile');
+                }, 1200);
+            }
+            return true;
         } catch (error) {
             Alert.alert('Erro', 'Não foi possível atualizar o perfil. Tente novamente.');
+            return false;
         } finally {
             setUploading(false);
-            setFotoPerfilLocal(null); // Limpa imagem local após upload
+            setFotoPerfilLocal(null);
         }
     };
+
+    // Handler para o botão salvar
+    const handleSaveButton = () => { handleSave(); };
 
     // Exclui a conta do usuário
     const handleDeleteAccount = async () => {
         Alert.alert(
             'Confirmação',
-            'Tem certeza de que deseja excluir sua conta?',
+            'Tem certeza de que deseja excluir sua conta? Esta ação não poderá ser desfeita.',
             [
                 { text: 'Cancelar', style: 'cancel' },
                 {
@@ -161,18 +212,18 @@ const EditProfile = () => {
         );
     };
 
+    // Marca dirty ao editar campos
+    const onChangeNome = (t: string) => { setNome(t); setDirty(true); };
+    const onChangeEmail = (t: string) => { setEmail(t); setDirty(true); };
+    const onChangeTelefone = (t: string) => { setTelefone(formatPhone(t)); setDirty(true); };
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Editar Perfil</Text>
-
-            <View style={{ alignItems: 'center', marginBottom: 16 }}>
+            <View style={styles.avatarWrapper}>
                 <TouchableOpacity onPress={pickImage}>
                     <Image
-                        source={
-                            fotoPerfil
-                                ? { uri: fotoPerfil }
-                                : require('../../assets/images/profile_default.jpeg')
-                        }
+                        source={fotoPerfil ? { uri: fotoPerfil } : require('../../assets/images/profile_default.jpeg')}
                         style={styles.image}
                     />
                     <View style={styles.editIconContainer}>
@@ -180,38 +231,44 @@ const EditProfile = () => {
                     </View>
                 </TouchableOpacity>
             </View>
-
-            <TextInput
-                style={styles.input}
-                placeholder="Nome"
-                value={nome}
-                onChangeText={setNome}
-            />
-
-            <TextInput
-                style={styles.input}
-                placeholder="E-mail"
-                keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail}
-            />
-
-            <TextInput
-                style={styles.input}
-                placeholder="Telefone"
-                keyboardType="phone-pad"
-                value={telefone}
-                onChangeText={(text) => setTelefone(formatPhone(text))}
-            />
-
-            <TouchableOpacity style={styles.button} onPress={handleSave} disabled={uploading}>
+            <View style={styles.formCard}>
+                <TextInput
+                    style={[styles.input, errors.nome && styles.inputError]}
+                    placeholder="Nome"
+                    value={nome}
+                    onChangeText={onChangeNome}
+                    autoCapitalize="words"
+                />
+                {errors.nome && <Text style={styles.errorText}>{errors.nome}</Text>}
+                <TextInput
+                    style={[styles.input, errors.email && styles.inputError]}
+                    placeholder="E-mail"
+                    keyboardType="email-address"
+                    value={email}
+                    onChangeText={onChangeEmail}
+                    autoCapitalize="none"
+                />
+                {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+                <TextInput
+                    style={[styles.input, errors.telefone && styles.inputError]}
+                    placeholder="Telefone (opcional)"
+                    keyboardType="phone-pad"
+                    value={telefone}
+                    onChangeText={onChangeTelefone}
+                    maxLength={15}
+                    autoCapitalize="none"
+                    placeholderTextColor="#b0b0b0"
+                />
+                {errors.telefone && <Text style={styles.errorText}>{errors.telefone}</Text>}
+            </View>
+            {successMsg ? <Text style={styles.successText}>{successMsg}</Text> : null}
+            <TouchableOpacity style={styles.button} onPress={handleSaveButton} disabled={uploading}>
                 {uploading ? (
                     <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
                     <Text style={styles.buttonText}>Salvar Alterações</Text>
                 )}
             </TouchableOpacity>
-
             <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={handleDeleteAccount}>
                 <Text style={styles.buttonText}>Excluir Conta</Text>
             </TouchableOpacity>
@@ -222,75 +279,103 @@ const EditProfile = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
+        backgroundColor: '#fffaf5',
         alignItems: 'center',
-        backgroundColor: '#f4f5f6',
-        paddingHorizontal: 24,
+        paddingHorizontal: 0,
+        paddingTop: 40,
     },
     title: {
-        fontSize: 28,
-        fontWeight: '700',
-        color: '#1f1f1f',
-        marginBottom: 20,
+        fontSize: 30,
+        fontWeight: '800',
+        color: '#ff7a00',
+        marginBottom: 16,
         textAlign: 'center',
+        letterSpacing: 0.5,
+    },
+    avatarWrapper: {
+        alignItems: 'center',
+        marginBottom: 24,
+        width: '100%',
+    },
+    image: {
+        width: 140,
+        height: 140,
+        borderRadius: 70,
+        marginBottom: 12,
+        backgroundColor: '#ffe3c2',
+        borderWidth: 4,
+        borderColor: '#ffb366',
+    },
+    formCard: {
+        width: '99%',
+        backgroundColor: '#fff',
+        borderRadius: 24,
+        padding: 32,
+        shadowColor: '#ffb366',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.10,
+        shadowRadius: 16,
+        elevation: 5,
+        marginBottom: 28,
+        gap: 10,
     },
     input: {
         width: '100%',
         height: 52,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#f9f9fb',
         borderRadius: 12,
         paddingHorizontal: 16,
-        marginBottom: 16,
+        marginBottom: 10,
         borderWidth: 1,
         borderColor: '#d0d0d0',
+        fontSize: 16,
+    },
+    inputError: {
+        borderColor: '#FF4C4C',
+    },
+    errorText: {
+        color: '#FF4C4C',
+        fontSize: 13,
+        marginBottom: 4,
+        marginLeft: 2,
+        alignSelf: 'flex-start',
+    },
+    successText: {
+        color: '#28A745',
         fontSize: 15,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        alignSelf: 'center',
     },
     button: {
-        backgroundColor: '#4A44C6',
-        paddingVertical: 14,
-        borderRadius: 12,
-        width: '100%',
+        backgroundColor: '#ff7a00',
+        paddingVertical: 20,
+        borderRadius: 16,
+        width: '99%',
         alignItems: 'center',
-        marginBottom: 16,
-        shadowColor: '#000',
+        marginBottom: 18,
+        shadowColor: '#ffb366',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOpacity: 0.10,
+        shadowRadius: 6,
         elevation: 2,
     },
     buttonText: {
-        color: '#ffffff',
-        fontSize: 16,
-        fontWeight: '600',
+        color: '#fff',
+        fontSize: 19,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+        textTransform: 'uppercase',
     },
     deleteButton: {
         backgroundColor: '#FF4C4C',
-    },
-    image: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        marginBottom: 16,
-    },
-    imagePlaceholder: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#e0e0e0',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    imagePlaceholderText: {
-        color: '#a0a0a0',
-        fontSize: 14,
-        fontWeight: '500',
+        marginBottom: 8,
     },
     editIconContainer: {
         position: 'absolute',
         bottom: 0,
         right: 0,
-        backgroundColor: '#4A44C6',
+        backgroundColor: '#ff7a00',
         borderRadius: 16,
         padding: 4,
         borderWidth: 2,

@@ -47,14 +47,14 @@ exports.login = async (req, res) => {
         if (!senhaValida) return res.status(401).json({ erro: 'Credenciais inválidas' });
 
         const token = jwt.sign({ id: usuario.id, tipo: usuario.tipo }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ mensagem: 'Login realizado com sucesso!', token, tipo: usuario.tipo, nome: usuario.nome, email: usuario.email });
+        res.json({ mensagem: 'Login realizado com sucesso!', token, tipo: usuario.tipo, nome: usuario.nome, email: usuario.email, telefone: usuario.telefone });
     } catch (err) {
         res.status(500).json({ erro: 'Erro no servidor: ' + err.message });
     }
 };
 
 exports.atualizarPerfil = async (req, res) => {
-    const { nome, email, telefone } = req.body;
+    const { nome, email, telefone, fotoPerfil } = req.body;
     const { id } = req.usuario; // ID do usuário autenticado (via middleware de autenticação)
 
     try {
@@ -67,6 +67,9 @@ exports.atualizarPerfil = async (req, res) => {
         usuario.nome = nome || usuario.nome;
         usuario.email = email || usuario.email;
         usuario.telefone = telefone || usuario.telefone;
+        if (fotoPerfil !== undefined) {
+            usuario.fotoPerfil = fotoPerfil || null;
+        }
 
         await usuario.save();
 
