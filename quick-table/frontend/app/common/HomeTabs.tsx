@@ -3,6 +3,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import useAuth from '../../hooks/useAuth';
+import api from '../../services/api';
 
 type TabType = {
   key: string;
@@ -17,7 +18,7 @@ const TABS: TabType[] = [
     key: 'profile',
     icon: <MaterialIcons name="person" size={28} color="#ff7a00" />,
     label: 'Perfil',
-    screen: '/common/profile',
+    screen: '/common/(tabs)/profile',
   },
   {
     key: 'restaurant',
@@ -62,9 +63,9 @@ type TabBarProps = {
   activeTab: string;
 };
 
-const TabBar = ({ userType, onTabPress, activeTab }: TabBarProps) => (
+const TabBar = ({ userType, onTabPress, activeTab, tabs }: TabBarProps & { tabs: TabType[] }) => (
   <View style={styles.tabBar}>
-    {TABS.filter(tab => !tab.role || tab.role === userType).map(tab => (
+    {tabs.map(tab => (
       <Pressable
         key={tab.key}
         style={styles.tabButton}
@@ -82,6 +83,21 @@ const HomeTabs = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
+  const [hasRestaurant, setHasRestaurant] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const fetchMyRestaurant = async () => {
+      if (user?.tipo === 'restaurante') {
+        try {
+          await api.get('/restaurantes/me');
+          setHasRestaurant(true);
+        } catch {
+          setHasRestaurant(false);
+        }
+      }
+    };
+    fetchMyRestaurant();
+  }, [user]);
 
   // Descobre a aba ativa pelo path
   const currentTab = TABS.find(tab => pathname.startsWith(tab.screen.split('?')[0]))?.key || 'profile';
@@ -92,9 +108,15 @@ const HomeTabs = () => {
     }
   };
 
+  // Filtra tabs: esconde "Cadastrar Restaurante" se já houver restaurante
+  const filteredTabs = TABS.filter(tab => {
+    if (tab.key === 'register-restaurant' && hasRestaurant) return false;
+    return !tab.role || tab.role === user?.tipo;
+  });
+
   return (
     <View style={styles.container}>
-      <TabBar userType={user?.tipo} onTabPress={handleTabPress} activeTab={currentTab} />
+      <TabBar userType={user?.tipo} onTabPress={handleTabPress} activeTab={currentTab} tabs={filteredTabs} />
     </View>
   );
 };

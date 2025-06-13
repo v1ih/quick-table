@@ -1,10 +1,49 @@
 // filepath: backend/controllers/mesaController.js
 const Mesa = require('../models/Mesa');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+
+// Configuração do multer para upload de imagens de mesa
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../uploads'));
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB por imagem
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) cb(null, true);
+        else cb(new Error('Apenas arquivos de imagem são permitidos!'));
+    }
+});
+
+exports.uploadMesaImages = upload.array('imagens', 3);
 
 exports.criarMesa = async (req, res) => {
     try {
-        const { numero, capacidade, disponivel, restauranteId, descricao } = req.body;
-        const mesa = await Mesa.create({ numero, capacidade, disponivel, restauranteId, descricao });
+        let { numero, capacidade, disponivel, restauranteId, descricao } = req.body;
+        // Se vier como string, converte para número
+        numero = Number(numero);
+        capacidade = Number(capacidade);
+        disponivel = disponivel === 'false' ? false : !!disponivel;
+        let imagens = [];
+        if (req.files && req.files.length > 0) {
+            imagens = req.files.map(file => `/uploads/${file.filename}`);
+        }
+        // Se imagens vierem como string (já existentes)
+        if (req.body.imagens && typeof req.body.imagens === 'string') {
+            try {
+                const imgs = JSON.parse(req.body.imagens);
+                if (Array.isArray(imgs)) imagens = imagens.concat(imgs);
+            } catch {}
+        }
+        imagens = imagens.slice(0, 3);
+        const mesa = await Mesa.create({ numero, capacidade, disponivel, restauranteId, descricao, imagens });
         res.status(201).json(mesa);
     } catch (err) {
         res.status(400).json({ erro: err.message });
@@ -42,8 +81,24 @@ exports.atualizarMesa = async (req, res) => {
     try {
         const mesa = await Mesa.findByPk(req.params.id);
         if (!mesa) return res.status(404).json({ erro: 'Mesa não encontrada' });
-
-        await mesa.update(req.body);
+        let { numero, capacidade, disponivel, descricao } = req.body;
+        numero = Number(numero);
+        capacidade = Number(capacidade);
+        disponivel = disponivel === 'false' ? false : !!disponivel;
+        let imagens = mesa.imagens || [];
+        // Novas imagens
+        if (req.files && req.files.length > 0) {
+            imagens = imagens.concat(req.files.map(file => `/uploads/${file.filename}`));
+        }
+        // Imagens existentes (enviadas como string JSON)
+        if (req.body.imagens && typeof req.body.imagens === 'string') {
+            try {
+                const imgs = JSON.parse(req.body.imagens);
+                if (Array.isArray(imgs)) imagens = imgs.concat(imagens.filter(img => !imgs.includes(img)));
+            } catch {}
+        }
+        imagens = imagens.slice(0, 3);
+        await mesa.update({ numero, capacidade, disponivel, descricao, imagens });
         res.json(mesa);
     } catch (err) {
         res.status(400).json({ erro: err.message });

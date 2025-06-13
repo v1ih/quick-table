@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, BackHandler, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import useAuth from '../../hooks/useAuth';
+import useAuth from '../../../hooks/useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../../services/api';
+import api from '../../../services/api';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const Profile = () => {
@@ -50,7 +50,7 @@ const Profile = () => {
     }, []);
 
     const handleEditProfile = () => {
-        router.push('/common/edit-profile');
+        router.push('/common/edit-profile'); // navegação correta para a pasta, usando o layout exclusivo
     };
 
     const handleLogout = async () => {
@@ -69,7 +69,7 @@ const Profile = () => {
                 <Text style={styles.title}>Meu Perfil</Text>
                 <View style={styles.avatarWrapper}>
                     <Image
-                        source={fotoPerfil ? { uri: fotoPerfil } : require('../../assets/images/profile_default.jpeg')}
+                        source={fotoPerfil ? { uri: fotoPerfil } : require('../../../assets/images/profile_default.jpeg')}
                         style={styles.image}
                     />
                 </View>
@@ -173,45 +173,45 @@ const styles = StyleSheet.create({
     },
     editButton: {
         backgroundColor: '#fff',
-        borderWidth: 2,
+        borderWidth: 1.5,
         borderColor: '#ff7a00',
-        borderRadius: 16,
-        width: '99%',
+        borderRadius: 24,
+        width: '95%',
         alignItems: 'center',
-        paddingVertical: 20,
-        marginBottom: 18,
+        paddingVertical: 12, // menor altura
+        marginBottom: 12,
         shadowColor: '#ffb366',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.10,
-        shadowRadius: 6,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.07,
+        shadowRadius: 4,
+        elevation: 1,
     },
     editButtonText: {
         color: '#ff7a00',
-        fontSize: 19,
-        fontWeight: 'bold',
-        letterSpacing: 1,
-        textTransform: 'uppercase',
+        fontSize: 16, // menor
+        fontWeight: '600',
+        letterSpacing: 0.5,
+        textTransform: 'none',
     },
     logoutButton: {
         backgroundColor: '#ff7a00',
-        borderRadius: 16,
-        width: '99%',
+        borderRadius: 24,
+        width: '95%',
         alignItems: 'center',
-        paddingVertical: 20,
+        paddingVertical: 12, // menor altura
         marginBottom: 8,
         shadowColor: '#ffb366',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.10,
-        shadowRadius: 6,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.07,
+        shadowRadius: 4,
+        elevation: 1,
     },
     logoutButtonText: {
         color: '#fff',
-        fontSize: 19,
-        fontWeight: 'bold',
-        letterSpacing: 1,
-        textTransform: 'uppercase',
+        fontSize: 16, // menor
+        fontWeight: '600',
+        letterSpacing: 0.5,
+        textTransform: 'none',
     },
 });
 

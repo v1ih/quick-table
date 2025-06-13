@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, BackHandler, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, BackHandler, Image, ActivityIndicator } from 'react-native';
+import { TextInput } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../../services/api';
+import api from '../../../services/api';
 import { useRouter, usePathname, useNavigation } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -54,13 +55,13 @@ const EditProfile = () => {
                     'Você tem alterações não salvas. Deseja descartar ou salvar antes de sair?',
                     [
                         { text: 'Cancelar', style: 'cancel' },
-                        { text: 'Descartar', style: 'destructive', onPress: () => router.replace('/common/profile') },
+                        { text: 'Descartar', style: 'destructive', onPress: () => router.replace('/common/(tabs)/profile') },
                         { text: 'Salvar', onPress: () => handleSave() },
                     ]
                 );
                 return true;
             }
-            router.replace('/common/profile');
+            router.replace('/common/(tabs)/profile');
             return true;
         };
         const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
@@ -171,7 +172,7 @@ const EditProfile = () => {
             if (!silent) {
                 setTimeout(() => {
                     setSuccessMsg('');
-                    router.replace('/common/profile');
+                    router.replace('/common/(tabs)/profile');
                 }, 1200);
             }
             return true;
@@ -223,7 +224,7 @@ const EditProfile = () => {
             <View style={styles.avatarWrapper}>
                 <TouchableOpacity onPress={pickImage}>
                     <Image
-                        source={fotoPerfil ? { uri: fotoPerfil } : require('../../assets/images/profile_default.jpeg')}
+                        source={fotoPerfil ? { uri: fotoPerfil } : require('../../../assets/images/profile_default.jpeg')}
                         style={styles.image}
                     />
                     <View style={styles.editIconContainer}>
@@ -233,28 +234,40 @@ const EditProfile = () => {
             </View>
             <View style={styles.formCard}>
                 <TextInput
+                    mode="outlined"
                     style={[styles.input, errors.nome && styles.inputError]}
-                    placeholder="Nome"
+                    label="Nome"
                     value={nome}
                     onChangeText={onChangeNome}
+                    placeholder="Seu nome completo"
+                    left={<TextInput.Icon icon="account" color="#ff7a00" />}
+                    theme={{ colors: { primary: '#ff7a00', background: '#fff' } }}
                     autoCapitalize="words"
                 />
                 {errors.nome && <Text style={styles.errorText}>{errors.nome}</Text>}
                 <TextInput
+                    mode="outlined"
                     style={[styles.input, errors.email && styles.inputError]}
-                    placeholder="E-mail"
+                    label="E-mail"
                     keyboardType="email-address"
                     value={email}
                     onChangeText={onChangeEmail}
+                    placeholder="seu@email.com"
+                    left={<TextInput.Icon icon="email" color="#ff7a00" />}
+                    theme={{ colors: { primary: '#ff7a00', background: '#fff' } }}
                     autoCapitalize="none"
                 />
                 {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
                 <TextInput
+                    mode="outlined"
                     style={[styles.input, errors.telefone && styles.inputError]}
-                    placeholder="Telefone (opcional)"
+                    label="Telefone (opcional)"
                     keyboardType="phone-pad"
                     value={telefone}
                     onChangeText={onChangeTelefone}
+                    placeholder="(99) 99999-9999"
+                    left={<TextInput.Icon icon="phone" color="#ff7a00" />}
+                    theme={{ colors: { primary: '#ff7a00', background: '#fff' } }}
                     maxLength={15}
                     autoCapitalize="none"
                     placeholderTextColor="#b0b0b0"
@@ -279,10 +292,10 @@ const EditProfile = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fffaf5',
+        backgroundColor: '#fff8f2', // fundo mais suave
         alignItems: 'center',
         paddingHorizontal: 0,
-        paddingTop: 40,
+        paddingTop: 32,
     },
     title: {
         fontSize: 30,
@@ -307,27 +320,25 @@ const styles = StyleSheet.create({
         borderColor: '#ffb366',
     },
     formCard: {
-        width: '99%',
+        width: '98%',
         backgroundColor: '#fff',
-        borderRadius: 24,
-        padding: 32,
+        borderRadius: 20,
+        padding: 18,
         shadowColor: '#ffb366',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.10,
-        shadowRadius: 16,
-        elevation: 5,
-        marginBottom: 28,
-        gap: 10,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.07,
+        shadowRadius: 10,
+        elevation: 2,
+        marginBottom: 18,
+        gap: 8,
     },
     input: {
         width: '100%',
-        height: 52,
-        backgroundColor: '#f9f9fb',
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        marginBottom: 10,
-        borderWidth: 1,
-        borderColor: '#d0d0d0',
+        height: 48,
+        backgroundColor: '#fff',
+        borderRadius: 14,
+        marginBottom: 8,
+        borderWidth: 0, // remove borda extra
         fontSize: 16,
     },
     inputError: {
@@ -349,27 +360,27 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: '#ff7a00',
-        paddingVertical: 20,
-        borderRadius: 16,
-        width: '99%',
+        paddingVertical: 12,
+        borderRadius: 14,
+        width: '98%',
         alignItems: 'center',
-        marginBottom: 18,
+        marginBottom: 12,
         shadowColor: '#ffb366',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.10,
-        shadowRadius: 6,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.08,
+        shadowRadius: 3,
+        elevation: 1,
     },
     buttonText: {
         color: '#fff',
-        fontSize: 19,
+        fontSize: 16,
         fontWeight: 'bold',
-        letterSpacing: 1,
+        letterSpacing: 0.5,
         textTransform: 'uppercase',
     },
     deleteButton: {
         backgroundColor: '#FF4C4C',
-        marginBottom: 8,
+        marginBottom: 6,
     },
     editIconContainer: {
         position: 'absolute',

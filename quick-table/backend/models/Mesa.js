@@ -19,14 +19,17 @@ const Mesa = sequelize.define('Mesa', {
   descricao: {
     type: DataTypes.TEXT,
     allowNull: true, // Opcional
-  },
-  restauranteId: {
+  },  restauranteId: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
       model: Restaurante,
       key: 'id',
     },
+  },
+  imagens: {
+    type: DataTypes.JSON, // array de strings
+    allowNull: true,
   },
 });
 

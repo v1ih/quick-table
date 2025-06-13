@@ -36,6 +36,10 @@ const Restaurante = sequelize.define('Restaurante', {
             key: 'id',
         },
     },
+    imagens: {
+        type: DataTypes.JSON, // Array de strings (urls ou nomes dos arquivos)
+        allowNull: true,
+    },
 });
 
 // Relacionamento: Um restaurante pertence a um usuário

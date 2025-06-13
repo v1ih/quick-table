@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import useAuth from '../../hooks/useAuth';
-import HomeTabs from './HomeTabs';
+import useAuth from '../../../hooks/useAuth';
+import HomeTabs from '../HomeTabs';
 
 const Home = () => {
     useAuth(); // Verifica se o usuário está autenticado
@@ -11,7 +11,7 @@ const Home = () => {
     const router = useRouter();
 
     useEffect(() => {
-        router.replace('/common/profile');
+        router.replace('/common/(tabs)/profile');
     }, []);
 
     return null;

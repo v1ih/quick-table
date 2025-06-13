@@ -43,6 +43,10 @@ module.exports = {
         },
         onDelete: 'CASCADE',
       },
+      imagens: {
+        type: Sequelize.JSON,
+        allowNull: true,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
