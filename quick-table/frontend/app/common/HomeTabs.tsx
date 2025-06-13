@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
-import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { MaterialIcons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
@@ -54,6 +54,20 @@ const TABS: TabType[] = [
     label: 'Minhas Reservas',
     screen: '/client/my-reservations',
     role: 'cliente',
+  },
+  {
+    key: 'manage-reservations',
+    icon: <MaterialCommunityIcons name="clipboard-list-outline" size={28} color="#ff7a00" />,
+    label: 'Reservas',
+    screen: '/restaurant/manage-reservations',
+    role: 'restaurante',
+  },
+  {
+    key: 'restaurant-reviews',
+    icon: <MaterialCommunityIcons name="star-circle" size={28} color="#ff7a00" />,
+    label: 'Avaliações',
+    screen: '/restaurant/reviews',
+    role: 'restaurante',
   },
 ];
 

@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Usuario = require('./Usuario');
 const Restaurante = require('./Restaurante');
+const Reserva = require('./Reserva');
 
 const Avaliacao = sequelize.define('Avaliacao', {
   nota: {
@@ -32,6 +33,11 @@ const Avaliacao = sequelize.define('Avaliacao', {
       key: 'id',
     },
   },
+  reservaId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    unique: true, // Garante uma avaliação por reserva
+  },
 });
 
 // Relacionamentos
@@ -40,5 +46,9 @@ Usuario.hasMany(Avaliacao, { foreignKey: 'usuarioId' });
 
 Avaliacao.belongsTo(Restaurante, { foreignKey: 'restauranteId', onDelete: 'CASCADE' });
 Restaurante.hasMany(Avaliacao, { foreignKey: 'restauranteId' });
+
+// Relacionamento com Reserva
+Avaliacao.belongsTo(Reserva, { foreignKey: 'reservaId', onDelete: 'CASCADE' });
+Reserva.hasOne(Avaliacao, { foreignKey: 'reservaId' });
 
 module.exports = Avaliacao;

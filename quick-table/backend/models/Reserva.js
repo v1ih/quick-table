@@ -9,7 +9,7 @@ const Reserva = sequelize.define('Reserva', {
     allowNull: false,
   },
   status: {
-    type: DataTypes.ENUM('pendente', 'confirmada', 'cancelada'),
+    type: DataTypes.ENUM('pendente', 'confirmada', 'cancelada', 'concluida'),
     defaultValue: 'pendente',
   },
   numeroPessoas: {
@@ -39,10 +39,9 @@ const Reserva = sequelize.define('Reserva', {
 });
 
 // Relacionamentos
-Reserva.belongsTo(Usuario, { foreignKey: 'usuarioId', onDelete: 'CASCADE' });
+Reserva.belongsTo(Usuario, { foreignKey: 'usuarioId', as: 'Usuario', onDelete: 'CASCADE' });
 Usuario.hasMany(Reserva, { foreignKey: 'usuarioId' });
-
-Reserva.belongsTo(Mesa, { foreignKey: 'mesaId', onDelete: 'CASCADE' });
+Reserva.belongsTo(Mesa, { foreignKey: 'mesaId', as: 'Mesa', onDelete: 'CASCADE' });
 Mesa.hasMany(Reserva, { foreignKey: 'mesaId' });
 
 module.exports = Reserva;

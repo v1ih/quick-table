@@ -1,4 +1,7 @@
 const Restaurante = require('../models/Restaurante');
+const Reserva = require('../models/Reserva');
+const Mesa = require('../models/Mesa');
+const Usuario = require('../models/Usuario');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
@@ -191,6 +194,82 @@ const obterRestaurantePorId = async (req, res) => {
     }
 };
 
+// Listar reservas do restaurante autenticado
+const listarReservasDoRestaurante = async (req, res) => {
+    try {
+        const usuarioId = req.usuario.id;
+        // Busca o restaurante do usuário autenticado
+        const restaurante = await Restaurante.findOne({ where: { usuarioId } });
+        console.log('Restaurante encontrado:', restaurante ? restaurante.id : null);
+        if (!restaurante) {
+            console.log('Restaurante não encontrado para usuário:', usuarioId);
+            return res.status(404).json({ erro: 'Restaurante não encontrado para este usuário.' });
+        }
+        // Busca todas as mesas do restaurante
+        const mesas = await Mesa.findAll({ where: { restauranteId: restaurante.id } });
+        const mesaIds = mesas.map(m => m.id);
+        console.log('Mesas encontradas:', mesaIds);
+        if (mesaIds.length === 0) {
+            console.log('Nenhuma mesa encontrada para o restaurante.');
+            return res.json([]); // Nenhuma mesa, retorna lista vazia
+        }
+        // Busca todas as reservas dessas mesas, incluindo dados do cliente e da mesa
+        const reservas = await Reserva.findAll({
+            where: { mesaId: mesaIds },
+            include: [
+                { model: Usuario, as: 'Usuario', attributes: ['nome', 'telefone'] },
+                { model: Mesa, as: 'Mesa', attributes: ['numero', 'descricao'] },
+            ],
+            order: [['dataHora', 'DESC']],
+        });
+        console.log('Reservas encontradas:', reservas.length);
+        // Formata para frontend
+        const reservasFormatadas = reservas.map(r => ({
+            id: r.id,
+            dataHora: r.dataHora,
+            status: r.status,
+            numeroPessoas: r.numeroPessoas,
+            usuario: r.Usuario ? { nome: r.Usuario.nome, telefone: r.Usuario.telefone } : undefined,
+            mesa: r.Mesa ? { numero: r.Mesa.numero, descricao: r.Mesa.descricao } : undefined,
+        }));
+        res.json(reservasFormatadas);
+    } catch (error) {
+        console.error('Erro ao listar reservas do restaurante:', error);
+        res.status(500).json({ erro: 'Erro ao listar reservas do restaurante.', detalhe: error.message });
+    }
+};
+
+// Atualizar status de uma reserva (restaurante)
+const atualizarStatusReservaRestaurante = async (req, res) => {
+    try {
+        const usuarioId = req.usuario.id;
+        const { id } = req.params;
+        const { status } = req.body;
+        // Busca o restaurante do usuário autenticado
+        const restaurante = await Restaurante.findOne({ where: { usuarioId } });
+        if (!restaurante) {
+            return res.status(404).json({ erro: 'Restaurante não encontrado para este usuário.' });
+        }
+        // Busca a reserva e garante que pertence a uma mesa do restaurante
+        const reserva = await Reserva.findByPk(id, {
+            include: [{ model: Mesa, as: 'Mesa', attributes: ['id', 'restauranteId'] }]
+        });
+        if (!reserva || !reserva.Mesa || reserva.Mesa.restauranteId !== restaurante.id) {
+            return res.status(404).json({ erro: 'Reserva não encontrada para este restaurante.' });
+        }
+        // Só permite status válidos
+        const statusValidos = ['pendente', 'confirmada', 'cancelada', 'concluida'];
+        if (!statusValidos.includes(status)) {
+            return res.status(400).json({ erro: 'Status inválido.' });
+        }
+        await reserva.update({ status });
+        res.json({ mensagem: 'Status da reserva atualizado com sucesso.', reserva });
+    } catch (error) {
+        console.error('Erro ao atualizar status da reserva:', error);
+        res.status(500).json({ erro: 'Erro ao atualizar status da reserva.' });
+    }
+};
+
 // Exportar o upload para uso na rota
 module.exports = {
     criarRestaurante,
@@ -201,4 +280,6 @@ module.exports = {
     listarRestaurantes,
     obterRestaurantePorId,
     upload,
+    listarReservasDoRestaurante,
+    atualizarStatusReservaRestaurante,
 };

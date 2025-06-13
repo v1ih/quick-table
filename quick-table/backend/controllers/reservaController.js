@@ -75,10 +75,12 @@ exports.obterReservas = async (req, res) => {
             include: [
                 {
                     model: Mesa,
+                    as: 'Mesa', // Usa o alias correto
                     attributes: ['numero', 'descricao'],
                     include: [
                         {
                             model: Restaurante,
+                            as: 'Restaurante', // Usa o alias correto
                             attributes: ['nome'],
                         },
                     ],
@@ -108,6 +110,34 @@ exports.cancelarReserva = async (req, res) => {
         // Cancelar a reserva
         await reserva.update({ status: 'Cancelada' });
         res.status(204).send();
+    } catch (err) {
+        res.status(500).json({ erro: err.message });
+    }
+};
+
+exports.obterReservaPorId = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const reserva = await Reserva.findByPk(id, {
+            include: [
+                {
+                    model: Mesa,
+                    as: 'Mesa',
+                    attributes: ['id', 'numero', 'descricao', 'restauranteId'],
+                    include: [
+                        {
+                            model: Restaurante,
+                            as: 'Restaurante',
+                            attributes: ['id', 'nome'],
+                        },
+                    ],
+                },
+            ],
+        });
+        if (!reserva) {
+            return res.status(404).json({ erro: 'Reserva não encontrada' });
+        }
+        res.json(reserva);
     } catch (err) {
         res.status(500).json({ erro: err.message });
     }

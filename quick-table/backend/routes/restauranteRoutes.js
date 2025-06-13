@@ -1,5 +1,5 @@
 const express = require('express');
-const { criarRestaurante, atualizarRestaurante, excluirRestaurante, cadastrarRestaurante, obterRestauranteDoUsuario, listarRestaurantes, obterRestaurantePorId, upload } = require('../controllers/restauranteController');
+const { criarRestaurante, atualizarRestaurante, excluirRestaurante, cadastrarRestaurante, obterRestauranteDoUsuario, listarRestaurantes, obterRestaurantePorId, upload, listarReservasDoRestaurante, atualizarStatusReservaRestaurante } = require('../controllers/restauranteController');
 const autenticar = require('../middlewares/autenticar');
 const router = express.Router();
 
@@ -20,6 +20,12 @@ router.get('/me', autenticar, obterRestauranteDoUsuario);
 
 // Rota para listar todos os restaurantes
 router.get('/', listarRestaurantes);
+
+// Rota para listar reservas do restaurante autenticado
+router.get('/reservas', autenticar, listarReservasDoRestaurante);
+
+// Rota para atualizar status de uma reserva do restaurante
+router.patch('/reservas/:id/status', autenticar, atualizarStatusReservaRestaurante);
 
 // Rota para obter os detalhes de um restaurante específico
 router.get('/:id', obterRestaurantePorId);
