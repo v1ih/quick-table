@@ -85,17 +85,19 @@ exports.atualizarMesa = async (req, res) => {
         numero = Number(numero);
         capacidade = Number(capacidade);
         disponivel = disponivel === 'false' ? false : !!disponivel;
-        let imagens = mesa.imagens || [];
-        // Novas imagens
-        if (req.files && req.files.length > 0) {
-            imagens = imagens.concat(req.files.map(file => `/uploads/${file.filename}`));
-        }
-        // Imagens existentes (enviadas como string JSON)
+
+        // Novo: sobrescrever imagens com as recebidas (respeitando ordem e exclusão)
+        let imagens = [];
+        // Se vier imagens existentes (string JSON)
         if (req.body.imagens && typeof req.body.imagens === 'string') {
             try {
                 const imgs = JSON.parse(req.body.imagens);
-                if (Array.isArray(imgs)) imagens = imgs.concat(imagens.filter(img => !imgs.includes(img)));
+                if (Array.isArray(imgs)) imagens = imgs;
             } catch {}
+        }
+        // Adiciona novas imagens do upload ao final
+        if (req.files && req.files.length > 0) {
+            imagens = imagens.concat(req.files.map(file => `/uploads/${file.filename}`));
         }
         imagens = imagens.slice(0, 3);
         await mesa.update({ numero, capacidade, disponivel, descricao, imagens });

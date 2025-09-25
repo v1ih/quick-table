@@ -122,11 +122,23 @@ const HomeTabs = () => {
     }
   };
 
-  // Filtra tabs: esconde "Cadastrar Restaurante" se já houver restaurante
-  const filteredTabs = TABS.filter(tab => {
-    if (tab.key === 'register-restaurant' && hasRestaurant) return false;
-    return !tab.role || tab.role === user?.tipo;
-  });
+
+  // Novo filtro: para restaurante, só mostra Perfil e Cadastrar Restaurante se NÃO tem restaurante,
+  // e só mostra Perfil e abas de restaurante (exceto Cadastrar) se JÁ tem restaurante
+  let filteredTabs: TabType[] = [];
+  if (user?.tipo === 'restaurante') {
+    if (hasRestaurant === false) {
+      filteredTabs = TABS.filter(tab => tab.key === 'profile' || tab.key === 'register-restaurant');
+    } else if (hasRestaurant === true) {
+      filteredTabs = TABS.filter(tab => tab.key === 'profile' || (tab.role === 'restaurante' && tab.key !== 'register-restaurant'));
+    } else {
+      // Enquanto não sabe, mostra só Perfil
+      filteredTabs = TABS.filter(tab => tab.key === 'profile');
+    }
+  } else {
+    // Para outros tipos de usuário, mantém filtro padrão
+    filteredTabs = TABS.filter(tab => !tab.role || tab.role === user?.tipo);
+  }
 
   return (
     <View style={styles.container}>

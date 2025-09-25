@@ -1,6 +1,5 @@
 // filepath: backend/server.js
 
-// Importando dependências
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
@@ -31,8 +30,8 @@ sequelize.sync({ alter: true }) // Use { alter: true } para atualizar o banco de
     .catch((err) => console.error('Erro ao sincronizar modelos:', err));
 
 // Rotas e Middleware
-app.use('/api/auth', authRoutes); // Certifique-se de que esta linha está presente
-app.use('/api/restaurantes', restauranteRoutes); // Atualizado para português
+app.use('/api/auth', authRoutes); 
+app.use('/api/restaurantes', restauranteRoutes); 
 app.use('/api/mesas', mesaRoutes);
 app.use('/api/reservas', reservaRoutes);
 app.use('/api/avaliacoes', avaliacaoRoutes);

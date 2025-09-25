@@ -91,8 +91,17 @@ exports.atualizarPerfil = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ erro: 'E-mail é obrigatório.' });
-    // Simula sempre sucesso (não revela se o e-mail existe)
-    return res.status(200).json({ mensagem: 'Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha.' });
+
+    try {
+        const usuario = await Usuario.findOne({ where: { email } });
+        if (!usuario) {
+            return res.status(404).json({ erro: 'E-mail não cadastrado.' });
+        }
+        // Simula o envio de e-mail com token
+        return res.status(200).json({ mensagem: 'Instruções para redefinir sua senha foram enviadas para o e-mail informado.' });
+    } catch (error) {
+        return res.status(500).json({ erro: 'Erro ao processar solicitação.' });
+    }
 };
 
 // Redefinição de senha - simulação de token, alteração real de senha

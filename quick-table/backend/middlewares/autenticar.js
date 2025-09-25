@@ -24,7 +24,7 @@ const verificarRestaurante = async (req, res, next) => {
         const restaurante = await Restaurante.findOne({ where: { usuarioId } });
 
         if (!restaurante) {
-            return res.status(403).json({ erro: 'Acesso negado. Usuário não possui um restaurante.' });
+            return res.status(403).json({ erro: 'O usuário não possui um restaurante.' });
         }
 
         req.restauranteId = restaurante.id; // Adiciona o restauranteId ao objeto req

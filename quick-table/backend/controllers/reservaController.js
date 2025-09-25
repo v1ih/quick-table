@@ -45,15 +45,17 @@ exports.criarReserva = async (req, res) => {
         // Atualizar a disponibilidade da mesa
         await mesa.update({ disponivel: false });
 
-        // Buscar a reserva criada com os detalhes da mesa e restaurante
+        // Buscar a reserva criada com os detalhes da mesa e restaurante (usando alias)
         const reservaDetalhada = await Reserva.findByPk(reserva.id, {
             include: [
                 {
                     model: Mesa,
+                    as: 'Mesa',
                     attributes: ['numero', 'descricao'],
                     include: [
                         {
                             model: Restaurante,
+                            as: 'Restaurante',
                             attributes: ['nome'],
                         },
                     ],

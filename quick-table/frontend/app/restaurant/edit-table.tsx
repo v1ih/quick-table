@@ -120,7 +120,10 @@ const EditTable = () => {
             formData.append('capacidade', capacidade);
             formData.append('descricao', descricao);
             formData.append('disponivel', disponivel ? 'true' : 'false');
-            // Envie imagens já existentes como string e novas como arquivo
+
+            // Separe imagens antigas (URL/backend) e novas (file://)
+            const imagensAntigas: string[] = [];
+            const imagensNovas: { uri: string; name: string; type: string }[] = [];
             images.forEach((img, idx) => {
                 if (
                     img.startsWith('http') ||
@@ -132,15 +135,22 @@ const EditTable = () => {
                         const match = img.match(/(\/uploads\/.*)/);
                         if (match) relative = match[1];
                     }
-                    formData.append('imagens', relative);
+                    imagensAntigas.push(relative);
                 } else if (img.startsWith('file://')) {
-                    formData.append('imagens', {
+                    imagensNovas.push({
                         uri: img,
                         name: `imagem${idx}.jpg`,
                         type: 'image/jpeg',
-                    } as any);
+                    });
                 }
             });
+            // Envie as antigas como JSON string
+            formData.append('imagens', JSON.stringify(imagensAntigas));
+            // E as novas como arquivos
+            imagensNovas.forEach(imgObj => {
+                formData.append('imagens', imgObj as any);
+            });
+
             await api.put(`/mesas/${id}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });

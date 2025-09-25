@@ -55,7 +55,7 @@ const RestaurantReviews = () => {
       ) : (
         <>
           <View style={styles.mediaBox}>
-            <Text style={styles.mediaLabel}>Média</Text>
+            <Text style={styles.mediaLabel}>Nota do Restaurante</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               {renderStars(Math.round(media || 0))}
               <Text style={styles.mediaValue}>{media ? media.toFixed(1) : '-'}</Text>
