@@ -14,6 +14,7 @@ type Restaurant = {
     horarioInicio?: string;
     horarioFim?: string;
     imagens?: string[];
+    notaMedia?: number | string | null;
 };
 
 const getImageUrl = (img: string) => {
@@ -32,8 +33,10 @@ const ListRestaurants = () => {
         const fetchRestaurants = async () => {
             try {
                 const response = await api.get('/restaurantes');
-                    setRestaurants(response.data);
-                    setFilteredRestaurants(response.data);
+                    const restos = response.data as Restaurant[];
+                    // Backend now returns notaMedia directly; use it
+                    setRestaurants(restos);
+                    setFilteredRestaurants(restos);
             } catch (error) {
                 Alert.alert('Erro', 'Não foi possível carregar os restaurantes.');
             }
@@ -84,6 +87,16 @@ const ListRestaurants = () => {
                     )}
                     <View style={styles.cardInfoWrapper}>
                         <Text style={styles.restaurantName}>{item.nome}</Text>
+                        <View style={styles.ratingRow}>
+                            <MaterialIcons name="star" size={16} color="#ffcc33" />
+                            {(() => {
+                                const raw = (item as any).notaMedia;
+                                const v = raw === null || raw === undefined ? null : Number(raw);
+                                return (
+                                    <Text style={styles.ratingText}>{v != null && !Number.isNaN(v) ? v.toFixed(1) : '—'}</Text>
+                                );
+                            })()}
+                        </View>
                         <Text style={styles.restaurantDescription} numberOfLines={2}>{item.descricao}</Text>
                         <Text style={styles.restaurantLocation} numberOfLines={1}>{item.localizacao}</Text>
                         {item.horarioInicio && item.horarioFim && (
@@ -250,6 +263,18 @@ const styles = StyleSheet.create({
         marginLeft: 8,
         padding: 4,
         borderRadius: 8,
+    },
+    ratingRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 4,
+        marginBottom: 2,
+    },
+    ratingText: {
+        marginLeft: 6,
+        fontSize: 13,
+        color: '#333',
+        fontWeight: '600',
     },
 });
 

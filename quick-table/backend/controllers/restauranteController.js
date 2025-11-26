@@ -2,6 +2,8 @@ const Restaurante = require('../models/Restaurante');
 const Reserva = require('../models/Reserva');
 const Mesa = require('../models/Mesa');
 const Usuario = require('../models/Usuario');
+const Avaliacao = require('../models/Avaliacao');
+const { fn, col } = require('sequelize');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
@@ -169,7 +171,13 @@ const obterRestauranteDoUsuario = async (req, res) => {
 // Listar todos os restaurantes
 const listarRestaurantes = async (req, res) => {
     try {
-        const restaurantes = await Restaurante.findAll();
+        const restaurantes = await Restaurante.findAll({
+            attributes: {
+                include: [[fn('AVG', col('Avaliacaos.nota')), 'notaMedia']]
+            },
+            include: [{ model: Avaliacao, attributes: [] }],
+            group: ['Restaurante.id'],
+        });
         res.json(restaurantes);
     } catch (error) {
         console.error('Erro ao listar restaurantes:', error);
@@ -181,7 +189,14 @@ const listarRestaurantes = async (req, res) => {
 const obterRestaurantePorId = async (req, res) => {
     try {
         const { id } = req.params;
-        const restaurante = await Restaurante.findByPk(id);
+        const restaurante = await Restaurante.findOne({
+            where: { id },
+            attributes: {
+                include: [[fn('AVG', col('Avaliacaos.nota')), 'notaMedia']]
+            },
+            include: [{ model: Avaliacao, attributes: [] }],
+            group: ['Restaurante.id'],
+        });
 
         if (!restaurante) {
             return res.status(404).json({ erro: 'Restaurante não encontrado.' });
