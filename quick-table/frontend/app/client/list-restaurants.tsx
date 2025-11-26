@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, BackHandler } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, BackHandler, TextInput, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import api from '../../services/api';
 import { Image } from 'react-native';
@@ -24,19 +24,37 @@ const getImageUrl = (img: string) => {
 
 const ListRestaurants = () => {
     const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+    const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
+    const [searchQuery, setSearchQuery] = useState<string>('');
     const router = useRouter();
 
     useEffect(() => {
         const fetchRestaurants = async () => {
             try {
                 const response = await api.get('/restaurantes');
-                setRestaurants(response.data);
+                    setRestaurants(response.data);
+                    setFilteredRestaurants(response.data);
             } catch (error) {
                 Alert.alert('Erro', 'Não foi possível carregar os restaurantes.');
             }
         };
         fetchRestaurants();
     }, []);
+
+    useEffect(() => {
+        if (!searchQuery) {
+            setFilteredRestaurants(restaurants);
+            return;
+        }
+        const q = searchQuery.toLowerCase();
+        const filtered = restaurants.filter(r => {
+            const nome = r.nome ? String(r.nome).toLowerCase() : '';
+            const descricao = r.descricao ? String(r.descricao).toLowerCase() : '';
+            const localizacao = r.localizacao ? String(r.localizacao).toLowerCase() : '';
+            return nome.includes(q) || descricao.includes(q) || localizacao.includes(q);
+        });
+        setFilteredRestaurants(filtered);
+    }, [searchQuery, restaurants]);
 
     useEffect(() => {
         const handleBackToHome = () => {
@@ -83,11 +101,30 @@ const ListRestaurants = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Restaurantes</Text>
+            <View style={styles.searchContainer}>
+                <MaterialIcons name="search" size={20} color="#999" style={styles.searchIcon} />
+                <TextInput
+                    placeholder="Buscar restaurantes..."
+                    placeholderTextColor="#999"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    style={styles.searchInput}
+                    returnKeyType="search"
+                    onSubmitEditing={() => Keyboard.dismiss()}
+                />
+                {searchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+                        <MaterialIcons name="close" size={18} color="#666" />
+                    </TouchableOpacity>
+                )}
+            </View>
             {restaurants.length === 0 ? (
                 <Text style={styles.noRestaurantsText}>Nenhum restaurante disponível.</Text>
+            ) : filteredRestaurants.length === 0 ? (
+                <Text style={styles.noRestaurantsText}>Nenhum restaurante encontrado.</Text>
             ) : (
                 <FlatList
-                    data={restaurants}
+                    data={filteredRestaurants}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={renderItem}
                     contentContainerStyle={{ paddingBottom: 24 }}
@@ -188,6 +225,31 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 24,
         color: '#777',
+    },
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: '#eee',
+    },
+    searchIcon: {
+        marginRight: 8,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 15,
+        color: '#333',
+        paddingVertical: 2,
+    },
+    clearButton: {
+        marginLeft: 8,
+        padding: 4,
+        borderRadius: 8,
     },
 });
 
