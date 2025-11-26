@@ -9,6 +9,7 @@ const restauranteRoutes = require('./routes/restauranteRoutes');
 const mesaRoutes = require('./routes/mesaRoutes');
 const reservaRoutes = require('./routes/reservaRoutes');
 const avaliacaoRoutes = require('./routes/avaliacaoRoutes');
+const favoritoRoutes = require('./routes/favoritoRoutes');
 
 // Inicializando o aplicativo Express
 const app = express();
@@ -35,6 +36,7 @@ app.use('/api/restaurantes', restauranteRoutes);
 app.use('/api/mesas', mesaRoutes);
 app.use('/api/reservas', reservaRoutes);
 app.use('/api/avaliacoes', avaliacaoRoutes);
+app.use('/api/favoritos', favoritoRoutes);
 app.use('/uploads', express.static('uploads'));
 
 // Middleware para rotas inexistentes

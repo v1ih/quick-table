@@ -27,21 +27,35 @@ const ListRestaurants = () => {
     const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
     const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
     const router = useRouter();
 
     useEffect(() => {
         const fetchRestaurants = async () => {
             try {
                 const response = await api.get('/restaurantes');
-                    const restos = response.data as Restaurant[];
-                    // Backend now returns notaMedia directly; use it
-                    setRestaurants(restos);
-                    setFilteredRestaurants(restos);
+                const restos = response.data as Restaurant[];
+                setRestaurants(restos);
+                setFilteredRestaurants(restos);
             } catch (error) {
                 Alert.alert('Erro', 'Não foi possível carregar os restaurantes.');
             }
         };
         fetchRestaurants();
+    }, []);
+
+    // Buscar favoritos do usuário (ids)
+    useEffect(() => {
+        const fetchFavorites = async () => {
+            try {
+                const res = await api.get('/favoritos');
+                const favs = Array.isArray(res.data) ? res.data.map((r: any) => r.id) : [];
+                setFavoriteIds(new Set(favs));
+            } catch (err) {
+                // não crítico
+            }
+        };
+        fetchFavorites();
     }, []);
 
     useEffect(() => {
@@ -87,6 +101,30 @@ const ListRestaurants = () => {
                     )}
                     <View style={styles.cardInfoWrapper}>
                         <Text style={styles.restaurantName}>{item.nome}</Text>
+                        <View style={styles.rowTopRight} />
+                        <TouchableOpacity
+                            style={styles.favoriteButton}
+                            onPress={async () => {
+                                try {
+                                    const isFav = favoriteIds.has(item.id);
+                                    if (isFav) {
+                                        await api.delete(`/favoritos/${item.id}`);
+                                        const copy = new Set(favoriteIds);
+                                        copy.delete(item.id);
+                                        setFavoriteIds(copy);
+                                    } else {
+                                        await api.post('/favoritos', { restauranteId: item.id });
+                                        const copy = new Set(favoriteIds);
+                                        copy.add(item.id);
+                                        setFavoriteIds(copy);
+                                    }
+                                } catch (err) {
+                                    Alert.alert('Erro', 'Não foi possível atualizar favorito.');
+                                }
+                            }}
+                        >
+                            <MaterialIcons name={favoriteIds.has(item.id) ? 'favorite' : 'favorite-border'} size={20} color={favoriteIds.has(item.id) ? '#ff4d6d' : '#666'} />
+                        </TouchableOpacity>
                         <View style={styles.ratingRow}>
                             <MaterialIcons name="star" size={16} color="#ffcc33" />
                             {(() => {
@@ -263,6 +301,18 @@ const styles = StyleSheet.create({
         marginLeft: 8,
         padding: 4,
         borderRadius: 8,
+    },
+    rowTopRight: {
+        position: 'absolute',
+        right: 8,
+        top: 8,
+    },
+    favoriteButton: {
+        position: 'absolute',
+        right: 8,
+        top: 6,
+        padding: 6,
+        borderRadius: 20,
     },
     ratingRow: {
         flexDirection: 'row',

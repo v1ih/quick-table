@@ -49,6 +49,13 @@ const TABS: TabType[] = [
     role: 'cliente',
   },
   {
+    key: 'client-favorites',
+    icon: <MaterialIcons name="favorite" size={24} color="#ff7a00" />,
+    label: 'Favoritos',
+    screen: '/client/my-favorites',
+    role: 'cliente',
+  },
+  {
     key: 'client-reservations',
     icon: <MaterialIcons name="event-seat" size={28} color="#ff7a00" />,
     label: 'Minhas Reservas',
